@@ -1,6 +1,6 @@
 const pool = require('../db/pool');
 
-const UNIQUE_VIOLATION = '23505';
+// Les erreurs de la base (ex. favori en double) remontent telles quelles : ce sont les routes qui les convertissent en erreurs HTTP.
 
 function toFavorite(row) {
   return {
@@ -57,12 +57,6 @@ async function addFavorite(userId, { tmdbId, type, rating = null, comment = null
     };
   } catch (err) {
     await client.query('ROLLBACK');
-    if (err.code === UNIQUE_VIOLATION) {
-      const error = new Error('Favorite already exists');
-      error.status = 409;
-      error.code = 'FAVORITE_ALREADY_EXISTS';
-      throw error;
-    }
     throw err;
   } finally {
     client.release();

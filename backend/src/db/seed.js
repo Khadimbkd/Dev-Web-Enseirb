@@ -1,5 +1,5 @@
-// Development / demo only: inserts the demo account and a few favorites.
-// Safe to run several times (idempotent). Usage: npm run db:seed
+// Développement / démo uniquement : insère le compte de démo et quelques favoris.
+// Peut être relancé sans risque (idempotent). Usage : npm run db:seed
 const bcrypt = require('bcrypt');
 const pool = require('./pool');
 
@@ -7,7 +7,7 @@ const BCRYPT_ROUNDS = 12;
 
 const DEMO_USER = { email: 'alice@example.org', password: 'Passw0rd!' };
 
-// Well-known TMDB ids used for the demo data.
+// Identifiants TMDB connus, utilisés pour les données de démo.
 const DEMO_MEDIA = [
   { tmdbId: 603, type: 'movie' }, // The Matrix
   { tmdbId: 27205, type: 'movie' }, // Inception
@@ -16,7 +16,7 @@ const DEMO_MEDIA = [
 
 async function seed() {
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('db:seed is disabled when NODE_ENV=production');
+    throw new Error('db:seed est désactivé quand NODE_ENV=production');
   }
 
   const passwordHash = await bcrypt.hash(DEMO_USER.password, BCRYPT_ROUNDS);
@@ -25,7 +25,7 @@ async function seed() {
   try {
     await client.query('BEGIN');
 
-    // The hash is only stored the first time: an existing account is left untouched.
+    // Le hash n'est enregistré qu'à la première exécution : un compte existant n'est pas modifié.
     await client.query(
       `INSERT INTO users (email, password_hash)
        VALUES ($1, $2)
@@ -54,7 +54,7 @@ async function seed() {
     }
 
     await client.query('COMMIT');
-    console.log(`Seeded demo account ${DEMO_USER.email} with ${DEMO_MEDIA.length} favorites.`);
+    console.log(`Compte de démo ${DEMO_USER.email} créé avec ${DEMO_MEDIA.length} favoris.`);
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
@@ -65,7 +65,7 @@ async function seed() {
 
 seed()
   .catch((err) => {
-    console.error('db:seed failed:', err.message);
+    console.error('db:seed a échoué :', err.message);
     process.exitCode = 1;
   })
   .finally(() => pool.end());
