@@ -12,3 +12,7 @@ Matériel d’enseignement pour le module de développement web (R&I, 2A).
 Chaque trinôme doit créer **son propre dépôt** pour développer le projet SeenFlix  
 et ajouter `@Systemofalam` comme collaboratrice.
 
+## Choix pour le Frontend
+
+Nous avons pris la décision de privilégier Axios pour les appels HTTP et Pinia pour
+la gestion d'état
