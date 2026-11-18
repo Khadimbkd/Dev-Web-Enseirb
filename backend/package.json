@@ -8,7 +8,9 @@
     "start": "node src/main.js",
     "dev": "node --watch src/main.js",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:seed": "node src/db/seed.js",
+    "db:reset": "node src/db/reset.js && node src/db/seed.js"
   },
   "repository": {
     "type": "git",
