@@ -1,0 +1,287 @@
+openapi: 3.0.3
+info:
+  title: SeenFlix API
+  version: 1.0.0
+  description: |
+    API REST de SeenFlix (sujet ProjetWeb.md, section 7.3).
+    Routes marquées `x-status: implemented` = déjà présentes dans le code, `x-status: todo` = à implémenter.
+    Priorités : niveau 1 (socle), niveau 2 (qualité), niveau 3 (bonus).
+
+servers:
+  - url: http://localhost:3000
+    description: Développement local
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Favorites
+  - name: Movies
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Vérifie que l'API répond
+      x-status: implemented
+      responses:
+        '200':
+          description: API opérationnelle
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Inscription d'un nouvel utilisateur
+      description: Email unique, mot de passe hashé avec bcrypt. Niveau 1.
+      x-status: todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '201':
+          description: Utilisateur créé (aucune donnée sensible renvoyée)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Email déjà utilisé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authentification
+      description: Renvoie un access token (courte durée) et un refresh token. Niveau 1 (access seul) puis niveau 3 (refresh).
+      x-status: todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '200':
+          description: Authentification réussie
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Renouvelle l'access token
+      description: Rotation du refresh token attendue (l'ancien est invalidé). Niveau 3.
+      x-status: todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Nouveaux tokens
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/favorites:
+    get:
+      tags: [Favorites]
+      summary: Liste des favoris de l'utilisateur connecté
+      description: "Niveau 1. Optionnel (niveau 3) : filtre par type, tri par note ou date d'ajout."
+      x-status: todo
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema: { type: string, enum: [movie, tv] }
+          description: Filtre par type (optionnel)
+        - in: query
+          name: sort
+          schema: { type: string, enum: [createdAt, rating] }
+          description: Tri (optionnel)
+      responses:
+        '200':
+          description: Liste des favoris
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Favorite' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Favorites]
+      summary: Ajoute un favori
+      description: Pas de doublon pour un même utilisateur / tmdbId / type. Niveau 1.
+      x-status: todo
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoriteInput' }
+      responses:
+        '201':
+          description: Favori créé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Favorite' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Le favori existe déjà
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /me/favorites/{id}:
+    delete:
+      tags: [Favorites]
+      summary: Supprime un favori de l'utilisateur connecté
+      x-status: todo
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204': { description: Favori supprimé }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Favori introuvable (ou appartenant à un autre utilisateur)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /movies/search:
+    get:
+      tags: [Movies]
+      summary: Recherche de films et séries (proxy TMDB)
+      description: |
+        Route publique. Niveau 1 : appel direct à TMDB.
+        Niveau 2 : cache LRU (TTL ~10 min, clé basée sur `q`) avec log HIT/MISS.
+      x-status: todo
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string, minLength: 1 }
+          description: Mot-clé de recherche
+      responses:
+        '200':
+          description: Résultats de recherche
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MovieResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500':
+          description: Erreur serveur ou API externe indisponible
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Requête invalide (validation Zod)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Non authentifié ou token invalide/expiré
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message: { type: string, example: Route introuvable }
+            code: { type: string, example: NOT_FOUND }
+
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: alice@example.org }
+        password: { type: string, minLength: 8, example: Passw0rd! }
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string, format: email }
+        createdAt: { type: string, format: date-time }
+
+    Tokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+
+    FavoriteInput:
+      type: object
+      required: [tmdbId, type]
+      properties:
+        tmdbId: { type: integer, example: 603 }
+        type: { type: string, enum: [movie, tv] }
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Optionnel (niveau 3)
+        comment:
+          type: string
+          maxLength: 500
+          description: Optionnel (niveau 3)
+
+    Favorite:
+      allOf:
+        - $ref: '#/components/schemas/FavoriteInput'
+        - type: object
+          properties:
+            id: { type: integer }
+            userId: { type: integer }
+            createdAt: { type: string, format: date-time }
+
+    MovieResult:
+      type: object
+      properties:
+        tmdbId: { type: integer }
+        type: { type: string, enum: [movie, tv] }
+        title: { type: string }
+        overview: { type: string }
+        posterPath: { type: string, nullable: true }
+        releaseDate: { type: string, nullable: true }
