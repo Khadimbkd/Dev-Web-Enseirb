@@ -12,7 +12,9 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 app.use('/health', healthRoutes);
-// TODO: /auth, /me/favorites, /movies/search
+app.use('/auth', healthRoutes);
+app.use('/me', healthRoutes);
+app.use('/movies', healthRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
