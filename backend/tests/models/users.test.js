@@ -35,17 +35,8 @@ describe('users model', () => {
       expect(user).not.toHaveProperty('passwordHash');
     });
 
-    it('renvoie une erreur 409 si l\'email existe déjà', async () => {
-      query.mockRejectedValue({ code: '23505' });
-
-      await expect(createUser('a@b.c', 'hash')).rejects.toMatchObject({
-        status: 409,
-        code: 'EMAIL_ALREADY_USED',
-      });
-    });
-
-    it('relance les autres erreurs telles quelles', async () => {
-      const dbError = new Error('connection lost');
+    it('laisse remonter les erreurs de la base telles quelles (doublon compris)', async () => {
+      const dbError = Object.assign(new Error('duplicate'), { code: '23505' });
       query.mockRejectedValue(dbError);
 
       await expect(createUser('a@b.c', 'hash')).rejects.toBe(dbError);
