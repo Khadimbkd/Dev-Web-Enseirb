@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="26.2.2" pages="2">
+  <diagram id="mcd" name="MCD">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="&lt;b style=&quot;font-size:16px&quot;&gt;MCD – SeenFlix&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user" value="&lt;b&gt;USER&lt;/b&gt;&lt;hr&gt;&lt;u&gt;id&lt;/u&gt;&lt;br&gt;email&lt;br&gt;password_hash&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="240" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="a_fav" value="&lt;b&gt;FAVORITE&lt;/b&gt;&lt;hr&gt;created_at&lt;br&gt;rating (optionnel)&lt;br&gt;comment (optionnel)" style="rounded=1;arcSize=25;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=14;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="120" width="260" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="e_media" value="&lt;b&gt;MEDIA&lt;/b&gt;&lt;hr&gt;&lt;u&gt;id&lt;/u&gt;&lt;br&gt;tmdb_id&lt;br&gt;type (movie | tv)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="120" width="240" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="l1" value="" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="e_user" target="a_fav">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l2" value="" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="a_fav" target="e_media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="0,n" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;labelBackgroundColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="300" y="150" width="60" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="0,n" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;labelBackgroundColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="690" y="150" width="60" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="rg" value="&lt;b&gt;Règles de gestion&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. L&#39;email d&#39;un USER est unique.&lt;br&gt;2. Un MEDIA (film ou série) est identifié de façon unique par le couple (tmdb_id, type).&lt;br&gt;3. Un USER ne peut pas mettre deux fois le même MEDIA en favori (erreur 409).&lt;br&gt;4. Le rating, s&#39;il existe, est compris entre 1 et 5.&lt;br&gt;5. La suppression d&#39;un USER supprime ses favoris.&lt;br&gt;6. Les attributs soulignés sont les identifiants du MCD ; l&#39;association FAVORITE n&#39;en a pas (un id technique est ajouté au passage au modèle relationnel)." style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="310" width="980" height="190" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="mld" name="Modèle relationnel">
+    <mxGraphModel dx="1255" dy="713" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t2" value="&lt;b style=&quot;font-size:16px&quot;&gt;Modèle relationnel – SeenFlix (Postgres)&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="20" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="r_user" value="&lt;b&gt;users&lt;/b&gt;&lt;hr&gt;&lt;u&gt;id&lt;/u&gt; : SERIAL (PK)&lt;br&gt;email : TEXT, NOT NULL, UNIQUE&lt;br&gt;password_hash : TEXT, NOT NULL&lt;br&gt;created_at : TIMESTAMPTZ, NOT NULL, défaut now()" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="40" y="110" width="320" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="r_fav" value="&lt;b&gt;favorites&lt;/b&gt;&lt;hr&gt;&lt;u&gt;id&lt;/u&gt; : SERIAL (PK)&lt;br&gt;#user_id : INTEGER, NOT NULL (FK)&lt;br&gt;#media_id : INTEGER, NOT NULL (FK)&lt;br&gt;rating : SMALLINT, CHECK (1 à 5)&lt;br&gt;comment : TEXT&lt;br&gt;created_at : TIMESTAMPTZ, NOT NULL, défaut now()&lt;br&gt;&lt;i&gt;UNIQUE (user_id, media_id)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="450" y="90" width="340" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="r_media" value="&lt;b&gt;media&lt;/b&gt;&lt;hr&gt;&lt;u&gt;id&lt;/u&gt; : SERIAL (PK)&lt;br&gt;tmdb_id : INTEGER, NOT NULL&lt;br&gt;type : TEXT, NOT NULL, CHECK (&#39;movie&#39; ou &#39;tv&#39;)&lt;br&gt;&lt;i&gt;UNIQUE (tmdb_id, type)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="880" y="110" width="300" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="fk1" value="ON DELETE CASCADE" style="edgeStyle=entityRelationEdgeStyle;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;html=1;strokeWidth=2;fontSize=11;labelBackgroundColor=#ffffff;" parent="1" source="r_fav" target="r_user" edge="1">
+          <mxGeometry x="0.2637" y="20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fk2" value="ON DELETE CASCADE" style="edgeStyle=entityRelationEdgeStyle;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;html=1;strokeWidth=2;fontSize=11;labelBackgroundColor=#ffffff;" parent="1" source="r_fav" target="r_media" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="notes" value="&lt;b&gt;Notation et passage MCD → modèle relationnel&lt;/b&gt;&lt;br&gt;&lt;br&gt;Notation : &lt;u&gt;souligné&lt;/u&gt; = clé primaire, # = clé étrangère. Les noms correspondent à &lt;i&gt;src/db/schema.sql&lt;/i&gt;.&lt;br&gt;• Chaque entité devient une table (USER devient &lt;i&gt;users&lt;/i&gt;, car &lt;i&gt;user&lt;/i&gt; est un mot réservé en PostgreSQL ; MEDIA devient &lt;i&gt;media&lt;/i&gt;).&lt;br&gt;• L&#39;association plusieurs-à-plusieurs FAVORITE devient la table &lt;i&gt;favorites&lt;/i&gt;, qui porte ses attributs (rating, comment, created_at) et les deux clés étrangères.&lt;br&gt;• Un id technique (favorites.id) est ajouté : il sert à DELETE /me/favorites/:id. L&#39;unicité métier est garantie par UNIQUE (user_id, media_id), ce qui permet le 409 en cas de doublon.&lt;br&gt;• Requêtes toujours paramétrées ($1, $2…) et filtrées par user_id issu du token (voir CONTEXT.md, section 6)." style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" parent="1" vertex="1">
+          <mxGeometry x="40" y="340" width="1140" height="190" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
