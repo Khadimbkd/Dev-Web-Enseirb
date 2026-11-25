@@ -104,19 +104,21 @@ paths:
     get:
       tags: [Favorites]
       summary: Liste des favoris de l'utilisateur connecté
-      description: "Niveau 1. Optionnel (niveau 3) : filtre par type, tri par note ou date d'ajout."
-      x-status: todo
+      description: |
+        Niveau 1. Favoris triés du plus récent au plus ancien.
+        Les paramètres `type` et `sort` (niveau 3) ne sont pas encore implémentés : ils sont ignorés.
+      x-status: implemented
       security:
         - bearerAuth: []
       parameters:
         - in: query
           name: type
           schema: { type: string, enum: [movie, tv] }
-          description: Filtre par type (optionnel)
+          description: Filtre par type (niveau 3, pas encore implémenté)
         - in: query
           name: sort
           schema: { type: string, enum: [createdAt, rating] }
-          description: Tri (optionnel)
+          description: Tri (niveau 3, pas encore implémenté)
       responses:
         '200':
           description: Liste des favoris
@@ -129,8 +131,10 @@ paths:
     post:
       tags: [Favorites]
       summary: Ajoute un favori
-      description: Pas de doublon pour un même utilisateur / tmdbId / type. Niveau 1.
-      x-status: todo
+      description: |
+        Pas de doublon pour un même utilisateur / tmdbId / type. Niveau 1.
+        L'utilisateur est celui du token : un champ `userId` dans le body est refusé (400).
+      x-status: implemented
       security:
         - bearerAuth: []
       requestBody:
@@ -147,7 +151,7 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '409':
-          description: Le favori existe déjà
+          description: Le favori existe déjà (code `FAVORITE_ALREADY_EXISTS`)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -156,19 +160,20 @@ paths:
     delete:
       tags: [Favorites]
       summary: Supprime un favori de l'utilisateur connecté
-      x-status: todo
+      x-status: implemented
       security:
         - bearerAuth: []
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: { type: integer, minimum: 1, maximum: 2147483647 }
       responses:
         '204': { description: Favori supprimé }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
-          description: Favori introuvable (ou appartenant à un autre utilisateur)
+          description: Favori introuvable ou appartenant à un autre utilisateur (code `FAVORITE_NOT_FOUND`)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -254,26 +259,30 @@ components:
     FavoriteInput:
       type: object
       required: [tmdbId, type]
+      additionalProperties: false
       properties:
-        tmdbId: { type: integer, example: 603 }
+        tmdbId: { type: integer, minimum: 1, maximum: 2147483647, example: 603 }
         type: { type: string, enum: [movie, tv] }
         rating:
           type: integer
           minimum: 1
           maximum: 5
-          description: Optionnel (niveau 3)
+          description: Optionnel
         comment:
           type: string
           maxLength: 500
-          description: Optionnel (niveau 3)
+          description: Optionnel (les espaces au début et à la fin sont retirés)
 
     Favorite:
-      allOf:
-        - $ref: '#/components/schemas/FavoriteInput'
-        - type: object
-          properties:
-            id: { type: integer }
-            createdAt: { type: string, format: date-time }
+      type: object
+      required: [id, tmdbId, type, rating, comment, createdAt]
+      properties:
+        id: { type: integer, example: 3 }
+        tmdbId: { type: integer, example: 603 }
+        type: { type: string, enum: [movie, tv] }
+        rating: { type: integer, minimum: 1, maximum: 5, nullable: true }
+        comment: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
 
     MovieResult:
       type: object
