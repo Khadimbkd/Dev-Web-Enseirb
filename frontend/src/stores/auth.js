@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import * as authApi from '../api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
-    // On relit le localStorage au démarrage pour rester connecté après un rechargement
     const token = ref(localStorage.getItem('accessToken'))
     const email = ref(localStorage.getItem('email'))
 
@@ -20,7 +19,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function register(emailValue, password) {
         await authApi.register(emailValue, password)
-        // L'inscription ne renvoie pas de token : on se connecte juste après
         await login(emailValue, password)
     }
 
