@@ -61,10 +61,10 @@ Le MCD et le modèle relationnel sont dans `modele-donnees.drawio` ; le schéma 
 
 ### Accès aux données (`backend/src/models/`)
 
-- `users.js` : `createUser`, `findUserByEmail`, `findUserById` (email déjà pris : erreur 409).
-- `favorites.js` : `listFavorites`, `addFavorite` (doublon : erreur 409), `removeFavorite`.
+- `users.js` : `createUser`, `findUserByEmail`, `findUserById`.
+- `favorites.js` : `listFavorites`, `addFavorite`, `removeFavorite`.
 
-Toutes les requêtes SQL sont paramétrées.
+Toutes les requêtes SQL sont paramétrées. Les modèles ne gèrent pas les erreurs HTTP : les erreurs de la base (doublon d'email ou de favori, code PostgreSQL `23505`) remontent telles quelles et ce sont les routes qui les convertissent (ex. 409) avec `httpError` et `isUniqueViolation`.
 
 ### Tests
 

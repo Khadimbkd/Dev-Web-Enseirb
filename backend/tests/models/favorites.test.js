@@ -95,18 +95,16 @@ describe('favorites model', () => {
       expect(favorite.comment).toBeNull();
     });
 
-    it('annule la transaction et renvoie 409 en cas de doublon', async () => {
+    it('annule la transaction et laisse remonter l\'erreur de doublon', async () => {
+      const duplicate = Object.assign(new Error('duplicate'), { code: '23505' });
       client = fakeClient({
         'INSERT INTO favorites': () => {
-          throw Object.assign(new Error('duplicate'), { code: '23505' });
+          throw duplicate;
         },
       });
       pool.connect.mockResolvedValue(client);
 
-      await expect(addFavorite(1, { tmdbId: 603, type: 'movie' })).rejects.toMatchObject({
-        status: 409,
-        code: 'FAVORITE_ALREADY_EXISTS',
-      });
+      await expect(addFavorite(1, { tmdbId: 603, type: 'movie' })).rejects.toBe(duplicate);
       expect(executedStatements(client)).toContain('ROLLBACK');
       expect(executedStatements(client)).not.toContain('COMMIT');
       expect(client.release).toHaveBeenCalledOnce();

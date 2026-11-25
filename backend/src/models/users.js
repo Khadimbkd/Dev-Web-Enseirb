@@ -1,6 +1,6 @@
 const pool = require('../db/pool');
 
-const UNIQUE_VIOLATION = '23505';
+// Les erreurs de la base (ex. email déjà pris) remontent telles quelles : ce sont les routes qui les convertissent en erreurs HTTP.
 
 // Les emails sont stockés et recherchés en minuscules : "A@b.c" et "a@b.c" désignent le même compte.
 function normalizeEmail(email) {
@@ -13,23 +13,13 @@ function toUser(row) {
 }
 
 async function createUser(email, passwordHash) {
-  try {
-    const { rows } = await pool.query(
-      `INSERT INTO users (email, password_hash)
-       VALUES ($1, $2)
-       RETURNING id, email, created_at`,
-      [normalizeEmail(email), passwordHash]
-    );
-    return toUser(rows[0]);
-  } catch (err) {
-    if (err.code === UNIQUE_VIOLATION) {
-      const error = new Error('Email already used');
-      error.status = 409;
-      error.code = 'EMAIL_ALREADY_USED';
-      throw error;
-    }
-    throw err;
-  }
+  const { rows } = await pool.query(
+    `INSERT INTO users (email, password_hash)
+     VALUES ($1, $2)
+     RETURNING id, email, created_at`,
+    [normalizeEmail(email), passwordHash]
+  );
+  return toUser(rows[0]);
 }
 
 // Renvoie aussi le hash du mot de passe : uniquement destiné à la vérification du login.

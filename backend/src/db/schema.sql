@@ -6,7 +6,7 @@ CREATE TABLE users (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- A movie or a TV show, identified on TMDB by (tmdb_id, type).
+-- Un film ou une série, identifié sur TMDB par (tmdb_id, type).
 CREATE TABLE media (
   id      SERIAL PRIMARY KEY,
   tmdb_id INTEGER NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE media (
   UNIQUE (tmdb_id, type)
 );
 
--- Association users <-> media: a user's favorites.
--- The UNIQUE constraint prevents duplicates (the API answers 409).
+-- Association users <-> media : les favoris d'un utilisateur.
+-- La contrainte UNIQUE empêche les doublons (l'API répond 409).
 CREATE TABLE favorites (
   id         SERIAL PRIMARY KEY,
   user_id    INTEGER     NOT NULL REFERENCES users(id) ON DELETE CASCADE,
